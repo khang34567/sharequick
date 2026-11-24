@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QuickHub ⚡ App to Web & Tiện ích</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <div class="app-shell">
+    <!-- Sidebar (Desktop) -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><i data-lucide="zap"></i></div>
+        <div>
+          <h1>QuickHub</h1>
+          <span>App ↔ Web Sync</span>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-tab="share">
+          <i data-lucide="send"></i>
+          <span>Đẩy File App ↔ Web</span>
+        </button>
+        <button class="nav-item" data-tab="bill">
+          <i data-lucide="qr-code"></i>
+          <span>Chia tiền VietQR</span>
+        </button>
+        <button class="nav-item" data-tab="notes">
+          <i data-lucide="sticky-note"></i>
+          <span>Ghi chú & Chi tiêu</span>
+        </button>
+        <button class="nav-item" data-tab="tools">
+          <i data-lucide="sparkles"></i>
+          <span>Tiện ích nhanh</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="themeToggleDesktop" class="btn-ghost w-full">
+          <i data-lucide="sun"></i>
+          <span>Đổi giao diện</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Mobile Header -->
+      <header class="mobile-header">
+        <div class="brand">
+          <div class="brand-icon"><i data-lucide="zap"></i></div>
+          <h1>QuickHub</h1>
+        </div>
+        <button id="themeToggleMobile" class="icon-btn" aria-label="Đổi giao diện">
+          <i data-lucide="sun"></i>
+        </button>
+      </header>
+
+      <!-- TAB 1: QUICK SHARE P2P (APP TO WEB) -->
+      <section id="tab-share" class="tab-panel active">
+        <div class="section-head">
+          <div>
+            <h2>Đẩy File & Link (App ↔ Web)</h2>
+            <p>Mở App siêu nhanh trên điện thoại, kết nối thẳng sang trang Web Vercel trên máy tính.</p>
+          </div>
+          <div id="peerStatusBadge" class="status-badge offline">
+            <span class="dot"></span>
+            <span id="peerStatusText">Đang khởi tạo...</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- My Room Card -->
+          <div class="card glass">
+            <div class="card-title">
+              <i data-lucide="radio"></i>
+              <span>Mã thiết bị của bạn</span>
+            </div>
+            <div class="room-code-box">
+              <span id="myPeerId">------</span>
+              <button id="copyPeerIdBtn" class="icon-btn" title="Sao chép mã">
+                <i data-lucide="copy"></i>
+              </button>
+            </div>
+
+            <!-- Vercel URL Setting (Only needed when running inside Android APK) -->
+            <div id="vercelConfigBox" class="mt-12 hidden">
+              <div class="field">
+                <label>Link Web Vercel của bạn (để tạo QR mở trên PC)</label>
+                <div class="input-row">
+                  <input type="url" id="vercelUrlInput" placeholder="https://ten-web-cua-ban.vercel.app" />
+                  <button id="saveVercelUrlBtn" class="btn-secondary">Lưu</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="hint mt-12">Nhập mã này ở Web trên máy tính (hoặc quét mã QR bên dưới) để thông 2 máy ngay.</p>
+            <div class="qr-wrap">
+              <div id="myPeerQr"></div>
+            </div>
+          </div>
+
+          <!-- Connect to Partner Card -->
+          <div class="card glass">
+            <div class="card-title">
+              <i data-lucide="link-2"></i>
+              <span>Kết nối sang Máy tính / Web</span>
+            </div>
+            <div class="input-row">
+              <input type="text" id="targetPeerInput" placeholder="Nhập mã 6 ký tự (VD: QH8291)" maxlength="12" />
+              <button id="connectPeerBtn" class="btn-primary">
+                <i data-lucide="plug"></i>
+                <span>Kết nối</span>
+              </button>
+            </div>
+            <div id="connectedBanner" class="connected-banner hidden">
+              <i data-lucide="check-circle-2"></i>
+              <span>Đã nối với: <strong id="connectedPeerName"></strong></span>
+              <button id="disconnectPeerBtn" class="btn-danger-sm">Ngắt</button>
+            </div>
+
+            <!-- Send Text / File Box -->
+            <div class="transfer-box">
+              <textarea id="shareTextInput" rows="3" placeholder="Dán link, đoạn code hoặc tin nhắn muốn đẩy sang máy kia..."></textarea>
+              <div class="transfer-actions">
+                <label class="btn-secondary file-label">
+                  <i data-lucide="paperclip"></i>
+                  <span>Đẩy File</span>
+                  <input type="file" id="shareFileInput" hidden />
+                </label>
+                <button id="sendTextBtn" class="btn-primary">
+                  <i data-lucide="send"></i>
+                  <span>Gửi ngay</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transfer History -->
+        <div class="card glass mt-16">
+          <div class="card-title between">
+            <div class="flex-center gap-8">
+              <i data-lucide="history"></i>
+              <span>Lịch sử nhận & đẩy file</span>
+            </div>
+            <button id="clearTransferBtn" class="btn-text">Xóa lịch sử</button>
+          </div>
+          <div id="transferFeed" class="transfer-feed">
+            <div class="empty-state">Chưa có tin nhắn hay file nào. Kết nối 2 thiết bị để bắt đầu đẩy file!</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BILL SPLITTER + VIETQR -->
+      <section id="tab-bill" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Chia tiền nhóm & VietQR</h2>
+            <p>Tự động chia tiền ăn uống, phí ship/giảm giá và tạo mã QR chuyển khoản riêng cho từng người.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card glass">
+            <div class="card-title">
+              <i data-lucide="landmark"></i>
+              <span>Tài khoản nhận tiền của bạn</span>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Ngân hàng</label>
+                <select id="bankId">
+                  <option value="MB">MB Bank (Quân Đội)</option>
+                  <option value="VCB">Vietcombank</option>
+                  <option value="TCB">Techcombank</option>
+                  <option value="BIDV">BIDV</option>
+                  <option value="ICB">VietinBank</option>
+                  <option value="ACB">ACB</option>
+                  <option value="VPB">VPBank</option>
+                  <option value="TPB">TPBank</option>
+                  <option value="VIB">VIB</option>
+                  <option value="STB">Sacombank</option>
+                  <option value="VBA">Agribank</option>
+                  <option value="OCB">OCB</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Số tài khoản</label>
+                <input type="text" id="bankAccount" placeholder="VD: 0123456789" />
+              </div>
+              <div class="field">
+                <label>Tên chủ TK (không dấu)</label>
+                <input type="text" id="bankOwner" placeholder="VD: NGUYEN VAN A" />
+              </div>
+              <div class="field">
+                <label>Nội dung gốc</label>
+                <input type="text" id="billTitle" placeholder="VD: Tien an trua" value="Chia tien" />
+              </div>
+            </div>
+            <div class="form-grid mt-12">
+              <div class="field">
+                <label>Phí ship / Phụ thu (VNĐ)</label>
+                <input type="number" id="extraFee" value="0" min="0" step="1000" />
+              </div>
+              <div class="field">
+                <label>Giảm giá / Voucher (VNĐ)</label>
+                <input type="number" id="discountFee" value="0" min="0" step="1000" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card glass">
+            <div class="card-title">
+              <i data-lucide="users"></i>
+              <span>Danh sách thành viên</span>
+            </div>
+            <div class="input-row">
+              <input type="text" id="memberName" placeholder="Tên bạn (VD: Minh)" />
+              <input type="number" id="memberAmount" placeholder="Tiền món (VD: 45000)" min="0" step="1000" />
+              <button id="addMemberBtn" class="btn-primary">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+
+            <div id="memberList" class="item-list mt-12">
+              <div class="empty-state">Chưa có ai trong danh sách.</div>
+            </div>
+
+            <div class="bill-summary">
+              <span>Tổng thanh toán:</span>
+              <strong id="billTotalDisplay">0 đ</strong>
+            </div>
+            <button id="generateQrBtn" class="btn-primary w-full mt-12">
+              <i data-lucide="qr-code"></i>
+              <span>Tính tiền & Tạo mã VietQR</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="qrResults" class="qr-results-grid mt-16"></div>
+      </section>
+
+      <!-- TAB 3: QUICK NOTES & EXPENSE -->
+      <section id="tab-notes" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Ghi chú & Chi tiêu nhanh</h2>
+            <p>Lưu trực tiếp offline ngay trên điện thoại, mở là dùng liền không cần mạng.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card glass">
+            <div class="card-title between">
+              <div class="flex-center gap-8">
+                <i data-lucide="notebook-pen"></i>
+                <span>Sổ tay ghi chú nhanh</span>
+              </div>
+              <span id="noteSavedStatus" class="hint-sm">Đã tự lưu</span>
+            </div>
+            <textarea id="quickNoteArea" rows="10" placeholder="Ghi chú nhanh việc cần làm, ý tưởng code... Tự động lưu ngay khi gõ!"></textarea>
+            <div class="transfer-actions mt-12">
+              <button id="copyNoteBtn" class="btn-secondary">
+                <i data-lucide="copy"></i>
+                <span>Sao chép hết</span>
+              </button>
+              <button id="clearNoteBtn" class="btn-danger-sm">Xóa trắng</button>
+            </div>
+          </div>
+
+          <div class="card glass">
+            <div class="card-title between">
+              <div class="flex-center gap-8">
+                <i data-lucide="wallet"></i>
+                <span>Chi tiêu hôm nay</span>
+              </div>
+              <strong id="expenseTotal" class="accent-text">0 đ</strong>
+            </div>
+
+            <div class="input-row">
+              <input type="text" id="expDesc" placeholder="Mua gì? (VD: Cà phê)" />
+              <input type="number" id="expAmount" placeholder="Số tiền (VNĐ)" min="0" step="1000" />
+              <button id="addExpenseBtn" class="btn-primary">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+
+            <div id="expenseList" class="item-list mt-12">
+              <div class="empty-state">Chưa ghi nhận khoản chi nào.</div>
+            </div>
+            <button id="clearExpensesBtn" class="btn-text mt-12">Xóa toàn bộ lịch sử chi tiêu</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: QUICK UTILITIES -->
+      <section id="tab-tools" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Tiện ích hàng ngày</h2>
+            <p>Đồng hồ tập trung Pomodoro và trình tạo mã QR Wi-Fi siêu tiện lợi.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card glass text-center">
+            <div class="card-title">
+              <i data-lucide="timer"></i>
+              <span>Đồng hồ tập trung Pomodoro</span>
+            </div>
+            <div class="pomo-modes">
+              <button class="chip active" data-mins="25">Học / Code (25p)</button>
+              <button class="chip" data-mins="5">Nghỉ ngắn (5p)</button>
+              <button class="chip" data-mins="15">Nghỉ dài (15p)</button>
+            </div>
+            <div id="pomoDisplay" class="pomo-time">25:00</div>
+            <div class="pomo-controls">
+              <button id="pomoStartBtn" class="btn-primary">
+                <i data-lucide="play"></i>
+                <span>Bắt đầu</span>
+              </button>
+              <button id="pomoResetBtn" class="btn-secondary">
+                <i data-lucide="rotate-ccw"></i>
+                <span>Đặt lại</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card glass">
+            <div class="card-title">
+              <i data-lucide="wifi"></i>
+              <span>Tạo mã QR chia sẻ Wi-Fi</span>
+            </div>
+            <div class="form-stack">
+              <div class="field">
+                <label>Tên mạng Wi-Fi (SSID)</label>
+                <input type="text" id="wifiSsid" placeholder="VD: Nha_Cua_Tui_5G" />
+              </div>
+              <div class="field">
+                <label>Mật khẩu Wi-Fi</label>
+                <input type="text" id="wifiPass" placeholder="Nhập mật khẩu Wi-Fi" />
+              </div>
+              <button id="genWifiQrBtn" class="btn-primary w-full">
+                <i data-lucide="qr-code"></i>
+                <span>Tạo mã QR Wi-Fi</span>
+              </button>
+            </div>
+            <div class="qr-wrap mt-12">
+              <div id="wifiQrOutput"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+      <button class="bottom-nav-item active" data-tab="share">
+        <i data-lucide="send"></i>
+        <span>Đẩy File</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="bill">
+        <i data-lucide="qr-code"></i>
+        <span>VietQR</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="notes">
+        <i data-lucide="sticky-note"></i>
+        <span>Ghi chú</span>
+      </button>
+      <button class="bottom-nav-item" data-tab="tools">
+        <i data-lucide="sparkles"></i>
+        <span>Tiện ích</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

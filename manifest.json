@@ -1,0 +1,16 @@
+{
+  "name": "QuickHub - App to Web & Tiện Ích",
+  "short_name": "QuickHub",
+  "description": "Đẩy file/link từ App điện thoại sang Web PC siêu tốc, chia tiền VietQR & tiện ích.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%236366f1'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='56' fill='white'>⚡</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
